@@ -5,10 +5,10 @@
     var app = new window.Vue({
         el: '#app',
         data: {
-            fiat: '',
+            fiat: '{{ $offer->fiat }}',
             btc_prices: {!! json_encode($btcPrices) !!},
-            payment_method: '',
-            margin: 0
+            payment_method: {{ $offer->payment_method_id }},
+            margin: {{ $offer->margin }}
         },
         methods: {
             caclulate_offer: function () {
@@ -45,14 +45,15 @@
                             </ul>
                         </div>
                     @endif
-                    <form method="POST">
+                    <form method="POST" action="{{ route('update-offer', $offer->id) }}">
                         @csrf
+                        {{ method_field('PUT') }}
                         <div class="form-group">
                             <label for="fiat">Fiat currency</label>
                             <select class="form-control" name="fiat" id="fiat" v-model="fiat">
                                 <option value="">(select value)</option>
                                 @foreach ($fiats as $fiat)
-                                    <option {{ (old('fiat') == $fiat ? 'selected':'') }}>{{ $fiat }}</option>
+                                    <option {{ ($offer->fiat == $fiat ? 'selected':'') }}>{{ $fiat }}</option>
                                 @endforeach
                             </select>
                         </div>
@@ -61,28 +62,28 @@
                             <select class="form-control" name="payment_method" id="payment_method" v-model="payment_method">
                                 <option value="">(select value)</option>
                                 @foreach ($payments as $payment)
-                                    <option value="{{ $payment->id }}" {{ (old('payment_method') == $payment->id ? 'selected':'') }}>{{ $payment->name }}</option>
+                                    <option value="{{ $payment->id }}" {{ $offer->payment_method_id == $payment->id ? 'selected':'' }}>{{ $payment->name }}</option>
                                 @endforeach
                             </select>
                         </div>
                         <div class="form-group">
                             <label for="margin">Margin (%)</label>
-                            <input type="number" class="form-control" name="margin" id="margin" value="{{ old('margin') ?: 0 }}" v-model="margin">
+                            <input type="number" class="form-control" name="margin" id="margin" value="{{ $offer->margin }}" v-model="margin">
                         </div>
                         <div class="form-group">
                             <label for="margin">Min fiat</label>
-                            <input type="number" class="form-control" name="min_fiat" id="min_fiat" value="{{ old('min_fiat') ?: 0 }}">
+                            <input type="number" class="form-control" name="min_fiat" id="min_fiat" value="{{ $offer->min_fiat }}">
                         </div>
                         <div class="form-group">
                             <label for="margin">Max fiat</label>
-                            <input type="number" class="form-control" name="max_fiat" id="max_fiat" value="{{ old('max_fiat') ?: 0 }}">
+                            <input type="number" class="form-control" name="max_fiat" id="max_fiat" value="{{ $offer->max_fiat }}">
                         </div>
                         <div class="form-group">
                             <div>
                                 Final offer price: @{{ caclulate_offer() }}
                             </div>
                         </div>
-                        <button type="submit" class="btn btn-primary">create</button>
+                        <button type="submit" class="btn btn-primary">save</button>
                     </form>
                 </div>
             </div>

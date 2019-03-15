@@ -7,6 +7,7 @@ use App\Lib\BitcoinPriceResolver;
 use App\Lib\Fiat;
 use App\Models\Offer;
 use App\Models\PaymentMethod;
+use Illuminate\Http\Request;
 
 class OfferController extends Controller
 {
@@ -59,6 +60,85 @@ class OfferController extends Controller
         $offer->status = Offer::STATUS_ENABLED;
         $offer->min_fiat = $request->post('min_fiat');
         $offer->max_fiat = $request->post('max_fiat');
+
+        $offer->save();
+
+        return redirect()->route('dashboard');
+    }
+
+    public function delete(Request $request)
+    {
+        /** @var Offer $offer */
+        $offer = Offer::findOrFail((int)$request->get('id'));
+        if ($offer->user_id === auth()->user()->id) {
+            $offer->delete();
+        }
+
+        return redirect()->route('dashboard');
+    }
+
+    public function edit($id, BitcoinPriceResolver $bitcoinPriceResolver)
+    {
+        $id = (int)$id;
+        /** @var Offer $offer */
+        $offer = Offer::findOrFail($id);
+        if ($offer->user_id !== auth()->user()->id) {
+            return redirect()->route('dashboard');
+        }
+
+        $prices = [];
+        foreach (Fiat::availableCurrencies() as $currency) {
+            $prices[$currency] = $bitcoinPriceResolver->getPrice($currency);
+        }
+
+        return view(
+            'edit_offer',
+            [
+                'fiats' => Fiat::availableCurrencies(),
+                'payments' => PaymentMethod::all(['id', 'name']),
+                'btcPrices' => $prices,
+                'offer' => $offer,
+            ]
+        );
+    }
+
+    /**
+     * Show the application dashboard.
+     *
+     * @param $id
+     * @param OfferFormRequest $request
+     * @return \Illuminate\Contracts\Support\Renderable
+     */
+    public function update($id, OfferFormRequest $request)
+    {
+        $id = (int)$id;
+        $offer = Offer::findOrFail($id);
+        if ($offer->user_id !== auth()->user()->id) {
+            return redirect()->route('dashboard');
+        }
+        $offer->margin = $request->post('margin');
+        $offer->fiat = $request->post('fiat');
+        $offer->payment_method_id = $request->post('payment_method');
+        $offer->min_fiat = $request->post('min_fiat');
+        $offer->max_fiat = $request->post('max_fiat');
+
+        $offer->save();
+
+        return redirect()->route('dashboard');
+    }
+
+    public function changeStatus(Request $request)
+    {
+        /** @var Offer $offer */
+        $offer = Offer::findOrFail((int)$request->get('id'));
+
+        if ($offer->user_id === auth()->user()->id) {
+            if ($offer->status === Offer::STATUS_ENABLED) {
+                $offer->status = Offer::STATUS_DISABLED;
+            } else {
+                $offer->status = Offer::STATUS_ENABLED;
+            }
+        }
 
         $offer->save();
 
