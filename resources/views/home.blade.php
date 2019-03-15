@@ -87,16 +87,15 @@
                                         <div class="form-group form-check-inline">
                                             <form>
                                                 <button class="btn btn-primary mr-2">
-                                                    <a class="text-white" href="{{ route('edit-offer', [$offer['id']]) }}">edit</a>
+                                                    <a class="text-white" href="{{ route('offers.edit', [$offer['id']]) }}">edit</a>
                                                 </button>
                                             </form>
-                                            <form method="POST" action="{{ route('delete-offer') }}">
+                                            <form method="POST" action="{{ route('offers.destroy', $offer['id']) }}">
                                                 {{ csrf_field() }}
                                                 {{ method_field('DELETE') }}
-                                                <input type="hidden" name="id" value="{{ $offer['id'] }}">
                                                 <button type="submit" class="btn btn-primary mr-2">delete</button>
                                             </form>
-                                            <form method="POST" action="{{ route('change-status-offer') }}">
+                                            <form method="POST" action="{{ route('offers.change-status') }}">
                                                 {{ csrf_field() }}
                                                 {{ method_field('PUT') }}
                                                 <input type="hidden" name="id" value="{{ $offer['id'] }}">

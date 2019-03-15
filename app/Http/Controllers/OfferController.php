@@ -66,10 +66,10 @@ class OfferController extends Controller
         return redirect()->route('dashboard');
     }
 
-    public function delete(Request $request)
+    public function destroy($id)
     {
         /** @var Offer $offer */
-        $offer = Offer::findOrFail((int)$request->get('id'));
+        $offer = Offer::findOrFail((int)$id);
         if ($offer->user_id === auth()->user()->id) {
             $offer->delete();
         }

@@ -45,7 +45,7 @@
                             </ul>
                         </div>
                     @endif
-                    <form method="POST">
+                    <form method="POST" action="{{ route('offers.store') }}">
                         @csrf
                         <div class="form-group">
                             <label for="fiat">Fiat currency</label>

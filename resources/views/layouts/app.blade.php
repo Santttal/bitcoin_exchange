@@ -35,7 +35,7 @@
                             <a class="nav-link" href="{{ url('/') }}">Dashboard</a>
                         </li>
                         <li class="nav-item active">
-                            <a class="nav-link" href="{{ route('create-offer') }}">Add offer</a>
+                            <a class="nav-link" href="{{ route('offers.create') }}">Add offer</a>
                         </li>
                     </ul>
 
