@@ -11,3 +11,4 @@ Route::put('/change-status', 'OfferController@changeStatus')->name('offers.chang
 Route::resource('offers', 'OfferController')->except(['index', 'show']);
 
 Route::post('/trades', 'TradeController@store')->name('trades.store');
+Route::put('/trades/{id}', 'TradeController@update')->name('trades.update');

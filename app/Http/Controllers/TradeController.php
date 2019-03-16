@@ -2,12 +2,10 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Requests\OfferFormRequest;
 use App\Lib\BitcoinPriceResolver;
-use App\Lib\Fiat;
+use App\Models\Balance;
 use App\Models\Bitcoin;
 use App\Models\Offer;
-use App\Models\PaymentMethod;
 use App\Models\Trade;
 use App\Models\User;
 use Illuminate\Http\Request;
@@ -70,23 +68,49 @@ class TradeController extends Controller
      * Show the application dashboard.
      *
      * @param $id
-     * @param OfferFormRequest $request
+     * @param Request $request
      * @return \Illuminate\Contracts\Support\Renderable
      */
-    public function update($id, OfferFormRequest $request)
+    public function update($id, Request $request)
     {
         $id = (int)$id;
-        $offer = Offer::findOrFail($id);
-        if ($offer->user_id !== auth()->user()->id) {
+        /** @var Trade $trade */
+        $trade = Trade::findOrFail($id);
+        if ($trade->offer->user_id !== auth()->user()->id) {
             return redirect()->route('dashboard');
         }
-        $offer->margin = $request->post('margin');
-        $offer->fiat = $request->post('fiat');
-        $offer->payment_method_id = $request->post('payment_method');
-        $offer->min_fiat = $request->post('min_fiat');
-        $offer->max_fiat = $request->post('max_fiat');
+        switch ($action = $request->get('action')) {
+            case Trade::ACTION_SELL:
+                \DB::transaction(function() use ($id) {
+                    /** @var Trade $trade */
+                    $trade = Trade::findOrFail($id);
+                    if ($trade->status == Trade::STATUS_ACTIVE) {
+                        $sellerId = $trade->offer->user_id;
+                        $buyerId = $trade->user_id;
+                        $buyerBalance = new Balance([
+                            'user_id' => $buyerId,
+                            'amount' => $trade->amount_satoshi,
+                            'type' => Balance::TYPE_TRANSACTION,
+                        ]);
+                        $buyerBalance->save();
+                        $sellerBalance = new Balance([
+                            'user_id' => $sellerId,
+                            'amount' => -$trade->amount_satoshi,
+                            'type' => Balance::TYPE_TRANSACTION,
+                        ]);
+                        $sellerBalance->save();
+                        $trade->status = Trade::STATUS_CLOSED;
+                    }
+                });
+                break;
+            case Trade::ACTION_CANCEL:
+                if ($trade->status == Trade::STATUS_ACTIVE) {
+                    $trade->status = Trade::STATUS_CANCELLED;
+                    $trade->save();
+                }
 
-        $offer->save();
+                break;
+        }
 
         return redirect()->route('dashboard');
     }

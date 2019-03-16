@@ -17,4 +17,8 @@ class Balance extends Model
 
     const TYPE_BONUS = 'bonus';
     const TYPE_TRANSACTION = 'transaction';
+
+    protected $fillable = [
+        'user_id', 'amount', 'type',
+    ];
 }

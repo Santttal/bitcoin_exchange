@@ -87,21 +87,21 @@
                                 @if($trade->offer->user->id === auth()->user()->id)
                                     <td>
                                         <div class="form-group form-check-inline">
-                                        <form method="POST" action="/">
+                                        <form method="POST" action="{{ route('trades.update', $trade->id) }}">
                                             @csrf
                                             {{ method_field('PUT') }}
                                             <div class="form-group form-check-inline">
                                                 <input type="hidden" name="trade_id" value="{{ $trade->id }}">
-                                                <input type="hidden" name="action" value="sell">
+                                                <input type="hidden" name="action" value="{{ \App\Models\Trade::ACTION_SELL }}">
                                                 <button type="submit" class="btn btn-success">sell</button>
                                             </div>
                                         </form>
-                                        <form method="POST" action="/">
+                                        <form method="POST" action="{{ route('trades.update', $trade->id) }}">
                                             @csrf
                                             {{ method_field('PUT') }}
                                             <div class="form-group form-check-inline">
                                                 <input type="hidden" name="trade_id" value="{{ $trade->id }}">
-                                                <input type="hidden" name="action" value="cancel">
+                                                <input type="hidden" name="action" value="{{ \App\Models\Trade::ACTION_CANCEL }}">
                                                 <button type="submit" class="btn btn-danger">cancel</button>
                                             </div>
                                         </form>

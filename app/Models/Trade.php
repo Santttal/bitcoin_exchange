@@ -21,6 +21,9 @@ class Trade extends Model
     const STATUS_CLOSED = 'closed';
     const STATUS_CANCELLED = 'cancelled';
 
+    const ACTION_SELL = 'sell';
+    const ACTION_CANCEL = 'cancel';
+
     public function offer() {
         return $this->hasOne(Offer::class, 'id', 'offer_id');
     }
