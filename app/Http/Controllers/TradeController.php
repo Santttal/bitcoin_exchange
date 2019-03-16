@@ -84,7 +84,7 @@ class TradeController extends Controller
                 \DB::transaction(function() use ($id) {
                     /** @var Trade $trade */
                     $trade = Trade::findOrFail($id);
-                    if ($trade->status == Trade::STATUS_ACTIVE) {
+                    if ($trade->status == Trade::STATUS_ACTIVE && $trade->amount_satoshi <= $trade->offer->user->getBalance(true)) {
                         $sellerId = $trade->offer->user_id;
                         $buyerId = $trade->user_id;
                         $buyerBalance = new Balance([
@@ -101,6 +101,8 @@ class TradeController extends Controller
                         $sellerBalance->save();
                         $trade->status = Trade::STATUS_CLOSED;
                         $trade->save();
+                    } else {
+                        // show message "not enough BTC"
                     }
                 });
                 break;
