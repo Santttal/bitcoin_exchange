@@ -21,4 +21,14 @@ class Offer extends Model
 
     const STATUS_ENABLED = 'enabled';
     const STATUS_DISABLED = 'disabled';
+
+    public function paymentMethod()
+    {
+        return $this->hasOne(PaymentMethod::class, 'id', 'payment_method_id');
+    }
+
+    public function user()
+    {
+        return $this->hasOne(User::class, 'id', 'user_id');
+    }
 }

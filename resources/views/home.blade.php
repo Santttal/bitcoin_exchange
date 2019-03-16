@@ -1,7 +1,4 @@
 @extends('layouts.app')
-
-
-
 @section('content')
 @if(\count($offers))
     <div class="container mb-4">
@@ -29,15 +26,18 @@
                                     <td>{{ $offer['payment_method'] }}</td>
                                     <td>{{ $offer['min_fiat'] }} - {{ $offer['max_fiat'] }} {{ $offer['fiat'] }}</td>
                                     <td>{{ $offer['price'] }} {{ $offer['fiat'] }}</td>
-                                    <td>
-                                        <form method="POST">
-                                            <div class="form-group form-check-inline">
-                                                <input type="number" class="form-control mr-2" name="amount">
-                                                <button type="submit" class="btn btn-primary">buy</button>
-                                            </div>
-                                        </form>
-
-                                    </td>
+                                    @auth
+                                        <td>
+                                            <form method="POST" action="{{ route('trades.store') }}">
+                                                @csrf
+                                                <div class="form-group form-check-inline">
+                                                    <input type="number" class="form-control mr-2" name="amount">
+                                                    <input type="hidden" name="offer_id" value="{{ $offer['id'] }}">
+                                                    <button type="submit" class="btn btn-primary">buy</button>
+                                                </div>
+                                            </form>
+                                        </td>
+                                    @endauth
                                 </tr>
                             @endforeach
                             </tbody>
@@ -48,17 +48,76 @@
         </div>
     </div>
 @endif
+@if(\count($trades))
 <div class="container mb-4">
     <div class="row justify-content-center">
         <div class="col-md-10">
             <div class="card">
                 <div class="card-header">Trades</div>
                 <div class="card-body">
+                    <table class="table table-striped">
+                        <thead>
+                        <tr>
+                            <th scope="col">ID</th>
+                            <th scope="col">Partner</th>
+                            <th scope="col">Amount(fiat)</th>
+                            <th scope="col">Amount(BTC)</th>
+                            <th scope="col">Payment method</th>
+                            <th scope="col">Status</th>
+                            <th scope="col">Started at</th>
+                            <th scope="col">actions</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        @foreach($trades as $trade)
+                            <tr>
+                                <td>{{ $trade->id }}</td>
+                                <td>
+                                    @if($trade->user->id === auth()->user()->id)
+                                        {{ $trade->offer->user->name }}
+                                    @else
+                                        {{ $trade->user->name }}
+                                    @endif
+                                </td>
+                                <td>{{ $trade->amount_fiat }} {{ $trade->offer->fiat }}</td>
+                                <td>{{ $trade->amount_satoshi / \App\Models\Bitcoin::SATOSHI }}</td>
+                                <td>{{ $trade->offer->paymentMethod->name }}</td>
+                                <td>{{ $trade->status }}</td>
+                                <td>{{ $trade->created_at }}</td>
+                                @if($trade->offer->user->id === auth()->user()->id)
+                                    <td>
+                                        <div class="form-group form-check-inline">
+                                        <form method="POST" action="/">
+                                            @csrf
+                                            {{ method_field('PUT') }}
+                                            <div class="form-group form-check-inline">
+                                                <input type="hidden" name="trade_id" value="{{ $trade->id }}">
+                                                <input type="hidden" name="action" value="sell">
+                                                <button type="submit" class="btn btn-success">sell</button>
+                                            </div>
+                                        </form>
+                                        <form method="POST" action="/">
+                                            @csrf
+                                            {{ method_field('PUT') }}
+                                            <div class="form-group form-check-inline">
+                                                <input type="hidden" name="trade_id" value="{{ $trade->id }}">
+                                                <input type="hidden" name="action" value="cancel">
+                                                <button type="submit" class="btn btn-danger">cancel</button>
+                                            </div>
+                                        </form>
+                                        </div>
+                                    </td>
+                                @endif
+                            </tr>
+                        @endforeach
+                        </tbody>
+                    </table>
                 </div>
             </div>
         </div>
     </div>
 </div>
+@endif
 @if(\count($myOffers))
     <div class="container">
         <div class="row justify-content-center">

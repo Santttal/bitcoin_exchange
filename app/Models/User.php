@@ -40,7 +40,7 @@ class User extends Authenticatable
 
     public function getBalance($satoshi = false)
     {
-        $balance = \DB::table('balances')
+        $balance = (int)\DB::table('balances')
             ->select(\DB::raw('IFNULL(sum(amount),0) as sum'))
             ->where('user_id', $this->id)
             ->pluck('sum')
