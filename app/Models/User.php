@@ -37,4 +37,19 @@ class User extends Authenticatable
     protected $casts = [
         'email_verified_at' => 'datetime',
     ];
+
+    public function getBalance($satoshi = false)
+    {
+        $balance = \DB::table('balances')
+            ->select(\DB::raw('IFNULL(sum(amount),0) as sum'))
+            ->where('user_id', $this->id)
+            ->pluck('sum')
+            ->first();
+
+        if (!$satoshi) {
+            return $balance / Bitcoin::SATOSHI;
+        } else {
+            return $balance;
+        }
+    }
 }
