@@ -3,10 +3,12 @@
 namespace App\Http\Controllers;
 
 use App\Lib\BitcoinPriceResolver;
+use App\Lib\Fiat;
 use App\Models\Offer;
 use App\Models\PaymentMethod;
 use App\Models\Trade;
 use App\Models\User;
+use Illuminate\Http\Request;
 
 class HomeController extends Controller
 {
@@ -17,9 +19,9 @@ class HomeController extends Controller
      * @param BitcoinPriceResolver $bitcoinPriceResolver
      * @return \Illuminate\Contracts\Support\Renderable
      */
-    public function index(BitcoinPriceResolver $bitcoinPriceResolver)
+    public function index(BitcoinPriceResolver $bitcoinPriceResolver, Request $request)
     {
-        $offersQuery = Offer::query();
+        $offersQuery = $this->queryFromRequest($request);
         if ($user = auth()->user()) {
             $offersQuery->where('user_id', '<>', $user->id);
         }
@@ -44,7 +46,16 @@ class HomeController extends Controller
             $trades = [];
         }
 
-        return view('home', ['offers' => $offers, 'trades' => $trades, 'myOffers' => $myOffers]);
+        return view(
+            'home',
+            [
+                'offers' => $offers,
+                'trades' => $trades,
+                'myOffers' => $myOffers,
+                'fiats' => Fiat::availableCurrencies(),
+                'payment_methods' => PaymentMethod::all(['id', 'name']),
+            ]
+        );
     }
 
     private function addOfferData(BitcoinPriceResolver $bitcoinPriceResolver, array $offers): array
@@ -57,5 +68,26 @@ class HomeController extends Controller
         unset($offer);
 
         return $offers;
+    }
+
+    private function queryFromRequest(Request $request)
+    {
+        $query = Offer::query();
+        $fiats = Fiat::availableCurrencies();
+        $paymentMethods = PaymentMethod::all('id')->pluck('id')->toArray();
+        if ($amount = (float)$request->get('amount')) {
+            $query->where('min_fiat', '<=', $amount);
+            $query->where('max_fiat', '>=', $amount);
+        }
+
+        if (\in_array($request->get('fiat'), $fiats)) {
+            $query->where('fiat', $request->get('fiat'));
+        }
+
+        if (\in_array($request->get('payment_method'), $paymentMethods)) {
+            $query->where('payment_method_id', $request->get('payment_method'));
+        }
+
+        return $query;
     }
 }

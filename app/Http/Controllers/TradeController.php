@@ -32,7 +32,7 @@ class TradeController extends Controller
     public function store(BitcoinPriceResolver $bitcoinPriceResolver, Request $request)
     {
         $offer_id = (int)$request->post('offer_id');
-        $fiatAmount = (float)$request->post('amount');
+        $fiatAmount = round((float)$request->post('amount'), 2);
 
         /** @var Offer $offer */
         $offer = Offer::findOrFail($offer_id);
@@ -100,6 +100,7 @@ class TradeController extends Controller
                         ]);
                         $sellerBalance->save();
                         $trade->status = Trade::STATUS_CLOSED;
+                        $trade->save();
                     }
                 });
                 break;
