@@ -2,7 +2,7 @@
 
 namespace App\Http\Requests;
 
-use App\Lib\Fiat;
+use App\Models\Fiat;
 use App\Models\PaymentMethod;
 use Illuminate\Foundation\Http\FormRequest;
 

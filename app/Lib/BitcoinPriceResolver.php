@@ -2,6 +2,8 @@
 
 namespace App\Lib;
 
+use App\Models\Fiat;
+
 class BitcoinPriceResolver
 {
     const CURRENT_PRICE = 3000.0;

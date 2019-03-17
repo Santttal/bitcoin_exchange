@@ -2,6 +2,7 @@
 
 namespace App\Lib;
 
+use App\Models\Fiat;
 use Illuminate\Redis\Connections\Connection;
 
 class CurrencyConverter

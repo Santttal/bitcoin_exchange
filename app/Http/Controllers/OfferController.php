@@ -4,7 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\OfferFormRequest;
 use App\Lib\BitcoinPriceResolver;
-use App\Lib\Fiat;
+use App\Models\Fiat;
 use App\Models\Offer;
 use App\Models\PaymentMethod;
 use Illuminate\Http\Request;

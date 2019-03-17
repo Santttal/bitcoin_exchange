@@ -3,7 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Lib\BitcoinPriceResolver;
-use App\Lib\Fiat;
+use App\Models\Fiat;
 use App\Models\Offer;
 use App\Models\PaymentMethod;
 use App\Models\Trade;
