@@ -4,25 +4,28 @@ namespace App\Lib;
 
 use GuzzleHttp\Client;
 
-class ExternalCurrencyApi
+class FreeCurrencyApi implements CurrencyApi
 {
-    const BASE_URL = 'http://free.currencyconverterapi.com';
-
-    const API_KEY = 'c364d7a1b8273ef6bd88';
-
     const CONVERT_URI = '/api/v6/convert?q=%s_%s&compact=ultra&apiKey=%s';
-
+    /**
+     * @var Client
+     */
     private $client;
+    /**
+     * @var string
+     */
+    private $apiKey;
 
-    public function __construct()
+    public function __construct(string $apiKey, string $baseUrl)
     {
-        $this->client = new Client(['base_uri' => self::BASE_URL]);
+        $this->client = new Client(['base_uri' => $baseUrl]);
+        $this->apiKey = $apiKey;
     }
 
     public function convert(string $from, string $to): ?float
     {
         try {
-            $response = $this->client->get(sprintf(self::CONVERT_URI, $from, $to, self::API_KEY));
+            $response = $this->client->get(sprintf(self::CONVERT_URI, $from, $to, $this->apiKey));
             $responseArray = json_decode($response->getBody()->getContents(), true);
             $currStr = "{$from}_{$to}";
             if (array_key_exists($currStr, $responseArray)) {

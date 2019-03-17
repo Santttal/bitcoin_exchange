@@ -44,4 +44,8 @@ return [
         ],
     ],
 
+    'currency_api' => [
+        'key' => env('CURRENCY_API_KEY'),
+        'url' => env('CURRENCY_API_URL'),
+    ]
 ];

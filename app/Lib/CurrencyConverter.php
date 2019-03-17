@@ -19,7 +19,7 @@ class CurrencyConverter
      */
     private $redis;
 
-    public function __construct(\Redis $redis, ExternalCurrencyApi $api)
+    public function __construct(\Redis $redis, CurrencyApi $api)
     {
         $this->redis = $redis::connection();
         $this->api = $api;

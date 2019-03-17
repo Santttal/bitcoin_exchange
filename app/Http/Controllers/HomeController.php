@@ -12,11 +12,11 @@ use Illuminate\Http\Request;
 
 class HomeController extends Controller
 {
-
     /**
      * Show the application dashboard.
      *
      * @param BitcoinPriceResolver $bitcoinPriceResolver
+     * @param Request $request
      * @return \Illuminate\Contracts\Support\Renderable
      */
     public function index(BitcoinPriceResolver $bitcoinPriceResolver, Request $request)
