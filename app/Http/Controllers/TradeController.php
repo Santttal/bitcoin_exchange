@@ -40,7 +40,13 @@ class TradeController extends Controller
         $offerUser = User::findOrFail($offer->user_id);
         $offerUserSatoshiBalance = $offerUser->getBalance(true);
 
+        if ($offer->min_fiat > $fiatAmount || $offer->max_fiat < $fiatAmount) {
+            flash("Invalid amount. Amount should be between {$offer->min_fiat} and {$offer->max_fiat}")->error();
+            return redirect()->route('dashboard');
+        }
+
         if ($offer->status !== Offer::STATUS_ENABLED || $offer->user_id === auth()->user()->id) {
+            flash('Forbidden')->error();
             return redirect()->route('dashboard');
         }
 
@@ -48,8 +54,10 @@ class TradeController extends Controller
         $satoshiAmount = round($fiatAmount / $oneBtcPrice * Bitcoin::SATOSHI);
 
         if ($offerUserSatoshiBalance < $satoshiAmount) {
-            $satoshiAmount = $offerUserSatoshiBalance;
-            $fiatAmount = round($satoshiAmount * $oneBtcPrice / Bitcoin::SATOSHI, 2);
+            $btcAmount = $offerUserSatoshiBalance / Bitcoin::SATOSHI;
+            $fiatAmount = round($btcAmount * $oneBtcPrice , 2);
+            flash("Seller doesn't have enough btc. Max amount is $btcAmount BTC ($fiatAmount {$offer->fiat})")->warning();
+            return redirect()->route('dashboard');
         }
         if ($fiatAmount > 0) {
             $trade = new Trade();
@@ -60,6 +68,8 @@ class TradeController extends Controller
             $trade->status = Trade::STATUS_ACTIVE;
             $trade->save();
         }
+
+        flash('Trade created')->success();
 
         return redirect()->route('dashboard');
     }
@@ -101,8 +111,9 @@ class TradeController extends Controller
                         $sellerBalance->save();
                         $trade->status = Trade::STATUS_CLOSED;
                         $trade->save();
+                        flash('Trade realised')->success();
                     } else {
-                        // show message "not enough BTC"
+                        flash('Not enough btc to realize trade')->error();
                     }
                 });
                 break;
@@ -110,6 +121,7 @@ class TradeController extends Controller
                 if ($trade->status == Trade::STATUS_ACTIVE) {
                     $trade->status = Trade::STATUS_CANCELLED;
                     $trade->save();
+                    flash('Trade cancelled')->success();
                 }
 
                 break;

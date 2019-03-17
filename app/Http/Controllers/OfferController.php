@@ -62,6 +62,7 @@ class OfferController extends Controller
         $offer->max_fiat = $request->post('max_fiat');
 
         $offer->save();
+        flash('Offer created')->success();
 
         return redirect()->route('dashboard');
     }
@@ -72,6 +73,7 @@ class OfferController extends Controller
         $offer = Offer::findOrFail((int)$id);
         if ($offer->user_id === auth()->user()->id) {
             $offer->delete();
+            flash('Offer removed')->success();
         }
 
         return redirect()->route('dashboard');
@@ -123,6 +125,7 @@ class OfferController extends Controller
         $offer->max_fiat = $request->post('max_fiat');
 
         $offer->save();
+        flash('Offer updated')->success();
 
         return redirect()->route('dashboard');
     }
@@ -135,8 +138,10 @@ class OfferController extends Controller
         if ($offer->user_id === auth()->user()->id) {
             if ($offer->status === Offer::STATUS_ENABLED) {
                 $offer->status = Offer::STATUS_DISABLED;
+                flash('Offer disabled')->success();
             } else {
                 $offer->status = Offer::STATUS_ENABLED;
+                flash('Offer enabled')->success();
             }
         }
 
