@@ -30,17 +30,21 @@ class HomeController extends Controller
         $offers = $this->addOfferData($bitcoinPriceResolver, $offers);
 
         if ($user) {
-            $trades = Trade::query()
-                ->where('status', Trade::STATUS_ACTIVE)
-                ->whereIn('offer_id', array_column($offers, 'id'), 'OR')
-                ->with(['offer', 'user', 'offer.paymentMethod', 'offer.user'])
-                ->get()
-            ;
-
             $myOffersQuery = Offer::query();
             $myOffersQuery->where('user_id', $user->id);
             $myOffers = $myOffersQuery->get()->toArray();
             $myOffers = $this->addOfferData($bitcoinPriceResolver, $myOffers);
+
+            $tradeQuery = Trade::query()->where('status', Trade::STATUS_ACTIVE);
+            $tradeQuery->with(['offer', 'user', 'offer.paymentMethod', 'offer.user']);
+            if (\count($myOffers)) {
+                $tradeQuery->whereRaw('(user_id = ? OR offer_id IN (?))', [$user->id, implode(',', array_column($myOffers, 'id'))]);
+            } else {
+                $tradeQuery->where('user_id', $user->id);
+            }
+
+            $trades = $tradeQuery->get();
+
         } else {
             $myOffers = [];
             $trades = [];
